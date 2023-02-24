@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace LoveLamp
@@ -8,11 +10,56 @@ namespace LoveLamp
         [SerializeField] private float radius = 10f;
         [SerializeField] private GameObject m_areaMarker;
         internal static List<LoveLamp> all = new();
+        internal Container container;
 
-        internal void OnInteract()
+        internal bool OnInteract(Humanoid user, bool hold, bool shift)
         {
-            ShowHideAreaMarker();
+            if(hold) return false;
+            if(shift) ConnectChest();
+            else
+            {
+                ShowHideAreaMarker();
+            }
+
+            return true;
         }
+
+        private void ConnectChest()
+        {
+            Container container = GetNearestChest();
+            if(!container)
+            {
+                Player.m_localPlayer.Message(MessageHud.MessageType.Center, "Can't find any chest near the lamp");
+                return;
+            }
+            this.container = container;
+            StartCoroutine(HeightlightChest());
+        }
+
+        private IEnumerator HeightlightChest()
+        {
+            Renderer[] componentsInChildren = GetComponentsInChildren<Renderer>();
+            foreach(Renderer renderer in componentsInChildren)
+            {
+                foreach(Material material in renderer.materials)
+                {
+                    if(material.HasProperty("_EmissionColor"))
+                        material.SetColor("_EmissionColor", Color.red * 0.7f);
+                    material.color = Color.red;
+                }
+            }
+            yield return new WaitForSeconds(1f);
+            foreach(Renderer renderer in componentsInChildren)
+            {
+                foreach(Material material in renderer.materials)
+                {
+                    if(material.HasProperty("_EmissionColor"))
+                        material.SetColor("_EmissionColor", Color.white * 0f);
+                    material.color = Color.white;
+                }
+            }
+        }
+
         private void ShowHideAreaMarker()
         {
             if(!m_areaMarker)
@@ -24,10 +71,9 @@ namespace LoveLamp
 
 
 
-        private static void Boost(Character character)
+        private void Boost(Character character)
         {
-            if(character.m_nview.GetZDO().GetBool("Boosted", false) || !character.IsTamed()) return;
-            Debug.Log($"Boosting {character.m_name}");
+            if(!character || !character.m_nview || character.m_nview.GetZDO().GetBool("Boosted", false) || !character.IsTamed() || !character.m_tameable) return;
             if(character.gameObject.TryGetComponent(out Procreation procreation))
             {
                 character.m_nview.GetZDO().Set("Boosted", true);
@@ -43,7 +89,6 @@ namespace LoveLamp
                 {
                     procreation.m_tameable.m_tamingTime /= 2;
                     procreation.m_tameable.m_levelUpFactor *= 2;
-                    if(!procreation.m_character.m_name.Contains("<color=yellow>Boosted</color")) procreation.m_character.m_name += " <color=yellow>Boosted</color>";
 
                     character.m_health *= 2;
                     character.m_walkSpeed *= 2;
@@ -53,12 +98,18 @@ namespace LoveLamp
                     character.m_jumpForce *= 2;
                     character.m_level++;
                 }
+
+
+                BaseAI baseAI = character.GetBaseAI();
+                if(!baseAI.GetPatrolPoint(out _))
+                {
+                    baseAI.SetPatrolPoint(transform.position);
+                }
             }
         }
         private static void UnBoost(Character character)
         {
-            if(!character.m_nview.GetZDO().GetBool("Boosted", false) || !character.IsTamed()) return;
-            Debug.Log($"UnBuffing {character.m_name}");
+            if(!character || !character.m_nview || !character.m_nview.GetZDO().GetBool("Boosted", false) || !character.IsTamed() || !character.m_tameable) return;
             if(character.gameObject.TryGetComponent(out Procreation procreation))
             {
                 character.m_nview.GetZDO().Set("Boosted", false);
@@ -74,7 +125,6 @@ namespace LoveLamp
                 {
                     procreation.m_tameable.m_tamingTime *= 2;
                     procreation.m_tameable.m_levelUpFactor /= 2;
-                    character.m_name = character.m_name.Replace(" <color=yellow>Boosted</color>", "");
 
                     character.m_health /= 2;
                     character.m_walkSpeed /= 2;
@@ -84,11 +134,18 @@ namespace LoveLamp
                     character.m_jumpForce /= 2;
                     character.m_level--;
                 }
+
+                BaseAI baseAI = character.GetBaseAI();
+                if(!baseAI.GetPatrolPoint(out _))
+                {
+                    baseAI.SetPatrolPoint();
+                }
             }
         }
         internal static void CheckBoost(Character character)
         {
-            if(HaveLoveLampInRange(character.transform.position)) Boost(character);
+            LoveLamp loveLamp = HaveLoveLampInRange(character.transform.position);
+            if(loveLamp) loveLamp.Boost(character);
             else UnBoost(character);
         }
         public static LoveLamp HaveLoveLampInRange(Vector3 point)
@@ -102,44 +159,34 @@ namespace LoveLamp
             return null;
         }
 
+        private void OnDestroy() => all.Remove(this);
 
-        private void OnDestroy()
+        private List<Container> GetChestsInRange()
         {
-            all.Remove(this);
-        }
-
-        //private List<Character> buffed = new();
-        /*internal void UpdatePetsInArea()
-        {
-            bool flag = IsBurning();
-            List<Character> characters = GetCharactersInRange();
-
-            foreach(Character character in characters)
-            {
-                if(!buffed.Contains(character) && flag) Boost(character);
-            }
-            List<Character> newBuffed = new();
-            foreach(Character character1 in buffed)
-            {
-                newBuffed.Add(character1);
-            }
-            foreach(Character character1 in newBuffed)
-            {
-                if(!characters.Contains(character1))
-                {
-                    UnBoost(character1);
-                }
-            }
-        }*/
-        /*private List<Character> GetCharactersInRange()
-        {
-            List<Collider> colliders1 = Physics.OverlapSphere(transform.position, radius).ToList();
-            List<Character> characters = new();
+            List<Collider> colliders1 = Physics.OverlapSphere(transform.position, 5f).ToList();
+            List<Container> containers = new();
             foreach(Collider collider in colliders1)
             {
-                if(collider.gameObject.TryGetComponent(out Character character) && (character is not Player)) characters.Add(character);
+                if(collider.gameObject.TryGetComponent(out Container container)) containers.Add(container);
             }
-            return characters;
-        }*/
+            return containers;
+        }
+        private Container GetNearestChest()
+        {
+            List<Container> containers = GetChestsInRange();
+            Container result = null;
+            float minDist = 999999;
+            Vector3 currentPos = transform.position;
+            foreach(Container container in containers)
+            {
+                float dist = Vector3.Distance(container.transform.position, currentPos);
+                if(dist < minDist)
+                {
+                    result = container;
+                    minDist = dist;
+                }
+            }
+            return result;
+        }
     }
 }

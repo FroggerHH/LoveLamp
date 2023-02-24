@@ -9,7 +9,7 @@ namespace LoveLamp
     public class Plugin : BaseUnityPlugin
     {
         #region values
-        private const string ModName = "LoveLamp", ModVersion = "1.0.0", ModGUID = "com.LoveLamp." + ModName;
+        private const string ModName = "LoveLamp", ModVersion = "1.0.1", ModGUID = "com.LoveLamp." + ModName;
         private static readonly Harmony harmony = new(ModGUID);
         public static Plugin _self;
         internal BuildPiece piece;

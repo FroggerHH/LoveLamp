@@ -7,11 +7,11 @@ namespace LoveLamp
     internal class Patch
     {
         [HarmonyPatch(typeof(Fireplace), nameof(Fireplace.Interact)), HarmonyPrefix]
-        public static bool FireplaceInteract(Fireplace __instance)
+        public static bool FireplaceInteract(Humanoid user, bool repeat, bool alt, Fireplace __instance, ref bool __result)
         {
             if(__instance is LoveLamp loveLamp)
             {
-                loveLamp.OnInteract();
+                __result = loveLamp.OnInteract(user, repeat, alt);
                 return false;
             }
             else return true;
@@ -67,10 +67,17 @@ namespace LoveLamp
 
             loveLamp.m_fuelItem = honey;
         }
+
         [HarmonyPatch(typeof(Character), nameof(Character.FixedUpdate)), HarmonyPostfix]
         public static void CharacterFixedUpdate(Character __instance)
         {
             if(!__instance.IsDead()) LoveLamp.CheckBoost(__instance);
+        }
+
+        [HarmonyPatch(typeof(Character), nameof(Character.GetHoverName)), HarmonyPostfix]
+        public static void CharacterGetHoverName(Character __instance, ref string __result)
+        {
+            if(__instance.m_nview.GetZDO().GetBool("Boosted", false)) __result += "<color=yellow>Boosted</color>";
         }
     }
 }
