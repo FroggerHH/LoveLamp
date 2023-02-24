@@ -7,11 +7,11 @@ namespace LoveLamp
     internal class Patch
     {
         [HarmonyPatch(typeof(Fireplace), nameof(Fireplace.Interact)), HarmonyPrefix]
-        public static bool FireplaceInteract(Humanoid user, bool repeat, bool alt, Fireplace __instance, ref bool __result)
+        public static bool FireplaceInteract(Humanoid user, bool hold, bool alt, Fireplace __instance, ref bool __result)
         {
             if(__instance is LoveLamp loveLamp)
             {
-                __result = loveLamp.OnInteract(user, repeat, alt);
+                __result = loveLamp.OnInteract(user, hold, alt);
                 return false;
             }
             else return true;
