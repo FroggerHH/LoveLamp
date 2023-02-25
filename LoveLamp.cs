@@ -44,8 +44,8 @@ namespace LoveLamp
                 foreach(Material material in renderer.materials)
                 {
                     if(material.HasProperty("_EmissionColor"))
-                        material.SetColor("_EmissionColor", Color.red * 0.7f);
-                    material.color = Color.red;
+                        material.SetColor("_EmissionColor", Color.yellow * 0.7f);
+                    material.color = Color.yellow;
                 }
             }
             yield return new WaitForSeconds(1f);

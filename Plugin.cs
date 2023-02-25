@@ -20,7 +20,7 @@ namespace LoveLamp
         internal BuildPiece piece;
         #endregion
         #region ConfigSettings
-        static string ConfigFileName = "com.Frogger.EpicMMONotifier.cfg";
+        static string ConfigFileName = "com.Frogger.LoveLamp.cfg";
         DateTime LastConfigChange;
         public static readonly ConfigSync configSync = new(ModName) { DisplayName = ModName, CurrentVersion = ModVersion, MinimumRequiredVersion = ModVersion };
         public static ConfigEntry<T> config<T>(string group, string name, T value, ConfigDescription description, bool synchronizedSetting = true)
@@ -141,7 +141,7 @@ namespace LoveLamp
                 foreach(LoveLamp loveLamp in LoveLamp.all)
                 {
                     loveLamp.radius = radiusConfig.Value;
-                    loveLamp.m_areaMarker.m_radius = chestRadiusConfig.Value;
+                    loveLamp.m_areaMarker.m_radius = radiusConfig.Value;
                 }
             });
 
