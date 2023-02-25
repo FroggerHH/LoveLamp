@@ -163,11 +163,12 @@ namespace LoveLamp
 
         private List<Container> GetChestsInRange()
         {
-            List<Collider> colliders1 = Physics.OverlapSphere(transform.position, 5f).ToList();
+            List<Piece> pieces = new();
             List<Container> containers = new();
-            foreach(Collider collider in colliders1)
+            Piece.GetAllComfortPiecesInRadius(transform.position, 5f, pieces);
+            foreach(Piece piece in pieces)
             {
-                if(collider.gameObject.TryGetComponent(out Container container)) containers.Add(container);
+                if(piece.gameObject.TryGetComponent(out Container container)) containers.Add(container);
             }
             return containers;
         }
