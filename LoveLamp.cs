@@ -1,14 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
+using static LoveLamp.Plugin;
 
 namespace LoveLamp
 {
     public class LoveLamp : Fireplace
     {
-        [SerializeField] private float radius = 10f;
-        [SerializeField] private GameObject m_areaMarker;
+        [SerializeField] internal float radius = 10f;
+        [SerializeField] internal CircleProjector m_areaMarker;
         internal static List<LoveLamp> all = new();
         internal Container container;
 
@@ -33,12 +33,12 @@ namespace LoveLamp
                 return;
             }
             this.container = container;
-            StartCoroutine(HeightlightChest());
+            StartCoroutine(HeightlightChest(container.gameObject));
         }
 
-        private IEnumerator HeightlightChest()
+        private IEnumerator HeightlightChest(GameObject container)
         {
-            Renderer[] componentsInChildren = GetComponentsInChildren<Renderer>();
+            Renderer[] componentsInChildren = container.GetComponentsInChildren<Renderer>();
             foreach(Renderer renderer in componentsInChildren)
             {
                 foreach(Material material in renderer.materials)
@@ -64,8 +64,8 @@ namespace LoveLamp
         {
             if(!m_areaMarker)
                 return;
-            if(m_areaMarker.activeSelf) m_areaMarker.SetActive(false);
-            else m_areaMarker.SetActive(true);
+            if(m_areaMarker.gameObject.activeSelf) m_areaMarker.gameObject.SetActive(false);
+            else m_areaMarker.gameObject.SetActive(true);
         }
 
 
@@ -165,7 +165,7 @@ namespace LoveLamp
         {
             List<Piece> pieces = new();
             List<Container> containers = new();
-            Piece.GetAllComfortPiecesInRadius(transform.position, 5f, pieces);
+            Piece.GetAllPiecesInRadius(transform.position, chestRadiusConfig.Value, pieces);
             foreach(Piece piece in pieces)
             {
                 if(piece.gameObject.TryGetComponent(out Container container)) containers.Add(container);
@@ -191,3 +191,6 @@ namespace LoveLamp
         }
     }
 }
+
+
+//CircleProjector
