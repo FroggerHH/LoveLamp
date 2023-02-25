@@ -73,30 +73,27 @@ namespace LoveLamp
 
         private void Boost(Character character)
         {
-            if(!character || !character.m_nview || character.m_nview.GetZDO().GetBool("Boosted", false) || !character.IsTamed() || !character.m_tameable) return;
+            if(character.m_nview.GetZDO().GetBool("Boosted", false) || !character.IsTamed()) return;
             if(character.gameObject.TryGetComponent(out Procreation procreation))
             {
                 character.m_nview.GetZDO().Set("Boosted", true);
                 procreation.CancelInvoke("Procreate");
-                procreation.m_updateInterval /= 2;
-                procreation.m_maxCreatures *= 2;
-                procreation.m_requiredLovePoints /= 2;
+                procreation.m_updateInterval /= updateInterval;
+                procreation.m_maxCreatures *= maxCreatures;
+                procreation.m_requiredLovePoints /= requiredLovePoints;
                 procreation.m_pregnancyChance = 1f;
-                procreation.m_pregnancyDuration /= 2;
+                procreation.m_pregnancyDuration /= pregnancyDuration;
 
                 procreation.InvokeRepeating("Procreate", Random.Range(procreation.m_updateInterval, procreation.m_updateInterval + procreation.m_updateInterval * 0.5f), procreation.m_updateInterval);
                 if(procreation.m_tameable)
                 {
-                    procreation.m_tameable.m_tamingTime /= 2;
-                    procreation.m_tameable.m_levelUpFactor *= 2;
+                    procreation.m_tameable.m_tamingTime /= tamingTime;
+                    procreation.m_tameable.m_levelUpFactor *= levelUpFactor;
 
-                    character.m_health *= 2;
-                    character.m_walkSpeed *= 2;
-                    character.m_runSpeed *= 2;
-                    character.m_swimSpeed *= 2;
-                    character.m_turnSpeed *= 2;
-                    character.m_jumpForce *= 2;
-                    character.m_level++;
+                    character.m_health *= health;
+                    character.m_speed *= speed;
+                    character.m_jumpForce *= jumpForce;
+                    character.m_level += boostLevel;
                 }
 
 
@@ -109,30 +106,27 @@ namespace LoveLamp
         }
         private static void UnBoost(Character character)
         {
-            if(!character || !character.m_nview || !character.m_nview.GetZDO().GetBool("Boosted", false) || !character.IsTamed() || !character.m_tameable) return;
+            if(!character.m_nview.GetZDO().GetBool("Boosted", false)) return;
             if(character.gameObject.TryGetComponent(out Procreation procreation))
             {
                 character.m_nview.GetZDO().Set("Boosted", false);
                 procreation.CancelInvoke("Procreate");
-                procreation.m_updateInterval *= 2;
-                procreation.m_maxCreatures /= 2;
-                procreation.m_requiredLovePoints *= 2;
+                procreation.m_updateInterval *= updateInterval;
+                procreation.m_maxCreatures /= maxCreatures;
+                procreation.m_requiredLovePoints *= requiredLovePoints;
                 procreation.m_pregnancyChance = 0.5f;
-                procreation.m_pregnancyDuration *= 2;
+                procreation.m_pregnancyDuration *= pregnancyDuration;
 
                 procreation.InvokeRepeating("Procreate", Random.Range(procreation.m_updateInterval, procreation.m_updateInterval + procreation.m_updateInterval * 0.5f), procreation.m_updateInterval);
                 if(procreation.m_tameable)
                 {
-                    procreation.m_tameable.m_tamingTime *= 2;
-                    procreation.m_tameable.m_levelUpFactor /= 2;
+                    procreation.m_tameable.m_tamingTime *= tamingTime;
+                    procreation.m_tameable.m_levelUpFactor /= levelUpFactor;
 
-                    character.m_health /= 2;
-                    character.m_walkSpeed /= 2;
-                    character.m_runSpeed /= 2;
-                    character.m_swimSpeed /= 2;
-                    character.m_turnSpeed /= 2;
-                    character.m_jumpForce /= 2;
-                    character.m_level--;
+                    character.m_health /= health;
+                    character.m_speed /= speed;
+                    character.m_jumpForce /= jumpForce;
+                    character.m_level -= boostLevel;
                 }
 
                 BaseAI baseAI = character.GetBaseAI();
@@ -145,8 +139,53 @@ namespace LoveLamp
         internal static void CheckBoost(Character character)
         {
             LoveLamp loveLamp = HaveLoveLampInRange(character.transform.position);
-            if(loveLamp) loveLamp.Boost(character);
+            if(loveLamp)
+            {
+                loveLamp.Boost(character);
+                if(character.m_tameable.IsHungry())
+                {
+                    loveLamp.DropFood(character.m_tameableMonsterAI.m_consumeItems);
+                }
+            }
             else UnBoost(character);
+        }
+
+        private void DropFood(List<ItemDrop> consumeItems)
+        {
+            if(!container) return;
+
+            ItemDrop.ItemData foodItem = null;
+            Inventory inventory = container.GetInventory();
+            foreach(ItemDrop.ItemData item in inventory.GetAllItems())
+            {
+                if(CanConsume(item, consumeItems))
+                {
+                    foodItem = item;
+                    break;
+                }
+            }
+            if(foodItem == null) return;
+
+            Vector3 position = transform.position + UnityEngine.Random.insideUnitSphere * 1f;
+            ItemDrop.DropItem(foodItem, 1, position, Quaternion.identity);
+        }
+
+        private bool CanConsume(ItemDrop.ItemData item, List<ItemDrop> consumeItems)
+        {
+            foreach(ItemDrop consumeItem in consumeItems)
+            {
+                if(consumeItem.m_itemData.m_shared.m_name == item.m_shared.m_name)
+                    return true;
+            }
+            return false;
+        }
+
+        internal static void UnBoostAll()
+        {
+            foreach(Character character in Character.m_characters)
+            {
+                UnBoost(character);
+            }
         }
         public static LoveLamp HaveLoveLampInRange(Vector3 point)
         {
@@ -165,7 +204,7 @@ namespace LoveLamp
         {
             List<Piece> pieces = new();
             List<Container> containers = new();
-            Piece.GetAllPiecesInRadius(transform.position, chestRadiusConfig.Value, pieces);
+            Piece.GetAllPiecesInRadius(transform.position, chestRadius, pieces);
             foreach(Piece piece in pieces)
             {
                 if(piece.gameObject.TryGetComponent(out Container container)) containers.Add(container);
@@ -189,6 +228,7 @@ namespace LoveLamp
             }
             return result;
         }
+
     }
 }
 

@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using UnityEngine;
+using static LoveLamp.Plugin;
 
 namespace LoveLamp
 {
@@ -32,6 +33,7 @@ namespace LoveLamp
             {
                 __result += Localization.instance.Localize(__instance.m_name + " ( $piece_fire_fuel " + Mathf.Ceil(__instance.m_nview.GetZDO().GetFloat("fuel")).ToString() + "/" + ((int)__instance.m_maxFuel).ToString() + ")" + "\n[<color=yellow><b>1-8</b></color>] $piece_useitem " + __instance.m_fuelItem.m_itemData.m_shared.m_name); ;
                 __result += Localization.instance.Localize("\n[<color=yellow><b>$KEY_Use</b></color>] To show/hide area");
+                __result += Localization.instance.Localize("\n[<color=yellow><b>$KEY_AltPlace + $KEY_Use</b></color>] To link a chest");
                 return false;
             }
             return true;
@@ -44,18 +46,15 @@ namespace LoveLamp
             {
                 __result += Localization.instance.Localize("\n");
                 __result += Localization.instance.Localize("\nBoosts:");
-                __result += Localization.instance.Localize("\nMax Creatures <color=orange>X2</color>");
-                __result += Localization.instance.Localize("\nRequired Love Points <color=orange>-X2</color>");
-                __result += Localization.instance.Localize("\nPregnancy Chance <color=orange>100%</color>");
-                __result += Localization.instance.Localize("\nTaming Time <color=orange>-X2</color>");
-                __result += Localization.instance.Localize("\nLevelUp Factor <color=orange>X2</color>");
-                __result += Localization.instance.Localize("\nHealth <color=orange>X2</color>");
-                __result += Localization.instance.Localize("\nWalk Speed <color=orange>X2</color>");
-                __result += Localization.instance.Localize("\nRun Speed <color=orange>X2</color>");
-                __result += Localization.instance.Localize("\nSwim Speed <color=orange>X2</color>");
-                __result += Localization.instance.Localize("\nTurn Speed <color=orange>X2</color>");
-                __result += Localization.instance.Localize("\nJumpForce <color=orange>X2</color>");
-                __result += Localization.instance.Localize("\nlevel <color=orange>+1</color>");
+                __result += Localization.instance.Localize($"\nMax Creatures <color=orange>X{maxCreatures}</color>");
+                __result += Localization.instance.Localize($"\nRequired Love Points <color=orange>-X{requiredLovePoints}</color>");
+                __result += Localization.instance.Localize($"\nPregnancy Chance <color=orange>100%</color>");
+                __result += Localization.instance.Localize($"\nTaming Time <color=orange>-X{tamingTime}</color>");
+                __result += Localization.instance.Localize($"\nLevelUp Factor <color=orange>X{levelUpFactor}</color>");
+                __result += Localization.instance.Localize($"\nHealth <color=orange>X{health}</color>");
+                __result += Localization.instance.Localize($"\nSpeed <color=orange>X{speed}</color>");
+                __result += Localization.instance.Localize($"\nJumpForce <color=orange>X{jumpForce}</color>");
+                __result += Localization.instance.Localize($"\nlevel <color=orange>+{boostLevel}</color>");
             }
         }
 
@@ -77,7 +76,7 @@ namespace LoveLamp
         [HarmonyPatch(typeof(Character), nameof(Character.GetHoverName)), HarmonyPostfix]
         public static void CharacterGetHoverName(Character __instance, ref string __result)
         {
-            if(__instance.m_nview.GetZDO().GetBool("Boosted", false)) __result += "<color=yellow>Boosted</color>";
+            if(__instance.m_nview.GetZDO().GetBool("Boosted", false)) __result += $" <color=yellow>{namePostfix}</color>";
         }
     }
 }

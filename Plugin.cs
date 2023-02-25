@@ -58,7 +58,34 @@ namespace LoveLamp
         #region values
         internal static ConfigEntry<float> radiusConfig;
         internal static ConfigEntry<float> chestRadiusConfig;
+        internal static ConfigEntry<float> updateIntervalConfig;
+        internal static ConfigEntry<int> maxCreaturesConfig;
+        internal static ConfigEntry<int> requiredLovePointsConfig;
+        internal static ConfigEntry<float> pregnancyDurationConfig;
+        internal static ConfigEntry<float> tamingTimeConfig;
+        internal static ConfigEntry<float> levelUpFactorConfig;
+        internal static ConfigEntry<float> healthConfig;
+        internal static ConfigEntry<float> speedConfig;
+        internal static ConfigEntry<float> jumpForceConfig;
+        internal static ConfigEntry<string> namePostfixConfig;
         internal static ConfigEntry<int> boostLevelConfig;
+        internal static ConfigEntry<int> maxFuelConfig;
+        internal static ConfigEntry<int> secPerFuelConfig;
+        internal static float radius;
+        internal static float chestRadius;
+        internal static float updateInterval;
+        internal static int maxCreatures;
+        internal static int requiredLovePoints;
+        internal static float pregnancyDuration;
+        internal static float tamingTime;
+        internal static float levelUpFactor;
+        internal static float health;
+        internal static float speed;
+        internal static float jumpForce;
+        internal static string namePostfix;
+        internal static int boostLevel;
+        internal static int maxFuel;
+        internal static int secPerFuel;
         #endregion
 
         private void Awake()
@@ -70,6 +97,17 @@ namespace LoveLamp
             radiusConfig = config("General", "Lamp Radius", 10f, "");
             chestRadiusConfig = config("General", "Find Chest Radius", 2f, "");
             boostLevelConfig = config("Boosts", "Level", 1, "");
+            updateIntervalConfig = config("Boosts", "Update Interval", 2f, "");
+            maxCreaturesConfig = config("Boosts", "Max Creatures", 2, "");
+            requiredLovePointsConfig = config("Boosts", "Required Love Points", 2, "");
+            pregnancyDurationConfig = config("Boosts", "Pregnancy Duration", 2f, "");
+            tamingTimeConfig = config("Boosts", "Taming Time", 2f, "");
+            levelUpFactorConfig = config("Boosts", "Level Up Factor", 2f, "");
+            healthConfig = config("Boosts", "Health", 2f, "");
+            speedConfig = config("Boosts", "Speed", 2f, "");
+            jumpForceConfig = config("Boosts", "Jump Force", 2f, "");
+            namePostfixConfig = config("Boosts", "Name Postfix", "Boosted", "");
+            boostLevelConfig = config("Boosts", "Add Level", 1, "");
 
 
 
@@ -80,6 +118,7 @@ namespace LoveLamp
             Config.Save();
             #endregion
 
+            #region piece
             piece = new("lovelamp", "JF_LoveLamp");
             piece.Name
                 .English("Lamp of Love")
@@ -93,7 +132,7 @@ namespace LoveLamp
             piece.Crafting.Set(CraftingTable.Workbench);
             piece.Category.Add(BuildPieceCategory.Furniture);
             MaterialReplacer.RegisterGameObjectForShaderSwap(piece.Prefab, MaterialReplacer.ShaderType.UseUnityShader);
-
+            #endregion
             harmony.PatchAll();
         }
 
@@ -138,10 +177,28 @@ namespace LoveLamp
             Task task = null;
             task = Task.Run(() =>
             {
+                LoveLamp.UnBoostAll();
+
+                radius = radiusConfig.Value;
+                chestRadius = chestRadiusConfig.Value;
+                updateInterval = updateIntervalConfig.Value;
+                maxCreatures = maxCreaturesConfig.Value;
+                requiredLovePoints = requiredLovePointsConfig.Value;
+                pregnancyDuration = pregnancyDurationConfig.Value;
+                tamingTime = tamingTimeConfig.Value;
+                levelUpFactor = levelUpFactorConfig.Value;
+                health = healthConfig.Value;
+                speed = speedConfig.Value;
+                jumpForce = jumpForceConfig.Value;
+                namePostfix = namePostfixConfig.Value;
+                boostLevel = boostLevelConfig.Value;
+
                 foreach(LoveLamp loveLamp in LoveLamp.all)
                 {
-                    loveLamp.radius = radiusConfig.Value;
-                    loveLamp.m_areaMarker.m_radius = radiusConfig.Value;
+                    loveLamp.radius = radius;
+                    loveLamp.m_areaMarker.m_radius = radius;
+                    loveLamp.m_maxFuel = maxFuel;
+                    loveLamp.m_secPerFuel = secPerFuel;
                 }
             });
 
