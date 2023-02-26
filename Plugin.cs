@@ -108,7 +108,8 @@ namespace LoveLamp
             jumpForceConfig = config("Boosts", "Jump Force", 2f, "");
             namePostfixConfig = config("Boosts", "Name Postfix", "Boosted", "");
             boostLevelConfig = config("Boosts", "Add Level", 1, "");
-
+            secPerFuelConfig = config("Boosts", "Sec Per Fuel", 400, "");
+            maxFuelConfig = config("Boosts", "Max Fuel", 50, "");
 
 
 
@@ -133,6 +134,7 @@ namespace LoveLamp
             piece.Category.Add(BuildPieceCategory.Furniture);
             MaterialReplacer.RegisterGameObjectForShaderSwap(piece.Prefab, MaterialReplacer.ShaderType.UseUnityShader);
             #endregion
+            //PrefabManager.RegisterPrefab("lovelamp","vfx_addFuel");
             harmony.PatchAll();
         }
 
@@ -192,6 +194,8 @@ namespace LoveLamp
                 jumpForce = jumpForceConfig.Value;
                 namePostfix = namePostfixConfig.Value;
                 boostLevel = boostLevelConfig.Value;
+                maxFuel = maxFuelConfig.Value;
+                secPerFuel = secPerFuelConfig.Value;
 
                 foreach(LoveLamp loveLamp in LoveLamp.all)
                 {

@@ -24,7 +24,7 @@ namespace LoveLamp
             return true;
         }
 
-        private void ConnectChest()
+        internal void ConnectChest()
         {
             Container container = GetNearestChest();
             if(!container)
@@ -73,7 +73,13 @@ namespace LoveLamp
 
         private void Boost(Character character)
         {
-            if(character.m_nview.GetZDO().GetBool("Boosted", false) || !character.IsTamed()) return;
+            if(character == null || character.m_nview == null) return;
+            ZDO zDO = character.m_nview.GetZDO();
+            if(zDO == null) return;
+            bool boosted = zDO.GetBool("Boosted", false);
+            if(boosted) return;
+            if(!character.IsTamed()) return;
+
             if(character.gameObject.TryGetComponent(out Procreation procreation))
             {
                 character.m_nview.GetZDO().Set("Boosted", true);
@@ -104,9 +110,14 @@ namespace LoveLamp
                 }
             }
         }
-        private static void UnBoost(Character character)
+        internal static void UnBoost(Character character)
         {
-            if(!character.m_nview.GetZDO().GetBool("Boosted", false)) return;
+            if(character == null || character.m_nview == null) return;
+            ZDO zDO = character.m_nview.GetZDO();
+            if(zDO == null) return;
+            bool boosted = zDO.GetBool("Boosted", false);
+            if(!boosted) return;
+
             if(character.gameObject.TryGetComponent(out Procreation procreation))
             {
                 character.m_nview.GetZDO().Set("Boosted", false);
@@ -138,17 +149,53 @@ namespace LoveLamp
         }
         internal static void CheckBoost(Character character)
         {
+            if(!character.m_tameable) return;
             LoveLamp loveLamp = HaveLoveLampInRange(character.transform.position);
-            if(loveLamp)
+            if(loveLamp && loveLamp.IsBurning())
             {
                 loveLamp.Boost(character);
-                if(character.m_tameable && character.m_tameable.IsHungry())
-                    loveLamp.DropFood(character.m_tameableMonsterAI.m_consumeItems);
+                if(character.m_tameable != null && character.m_tameable.IsHungry())
+                {
+                    loveLamp.GiveFood(character);
+                }
             }
-            else UnBoost(character);
+            else
+            {
+                UnBoost(character);
+            }
         }
 
-        private void DropFood(List<ItemDrop> consumeItems)
+        private void GiveFood(Character character)
+        {
+            if(!container) return;
+            Debug.Log("GiveFood");
+
+            ItemDrop.ItemData foodItem = null;
+            Inventory inventory = container.GetInventory();
+            foreach(ItemDrop.ItemData item in inventory.GetAllItems())
+            {
+                Debug.Log("GiveFood 2");
+                if(character.m_tameableMonsterAI.CanConsume(item))
+                {
+                    Debug.Log($"GiveFood 3 {item.m_shared.m_name}");
+                    foodItem = item;
+                    break;
+                }
+            }
+
+            Debug.Log("GiveFood 4 ");
+            if(foodItem == null) return;
+            Debug.Log("GiveFood 5");
+
+            character.m_tameableMonsterAI.m_onConsumedItem?.Invoke(character.m_tameableMonsterAI.m_consumeTarget);
+            (character as Humanoid)?.m_consumeItemEffects.Create(transform.position, Quaternion.identity);
+            character.m_tameableMonsterAI.m_animator.SetTrigger("consume");
+            character.m_tameableMonsterAI.m_consumeTarget = null;
+            inventory.RemoveOneItem(foodItem);
+            Debug.Log("GiveFood 6");
+        }
+
+        private void DropFood(List<ItemDrop> consumeItems = null)
         {
             if(!container) return;
             Debug.Log(nameof(DropFood));
@@ -156,22 +203,27 @@ namespace LoveLamp
             Debug.Log(nameof(DropFood) + " 1");
             ItemDrop.ItemData foodItem = null;
             Inventory inventory = container.GetInventory();
-            foreach(ItemDrop.ItemData item in inventory.GetAllItems())
+            if(consumeItems != null)
             {
-                Debug.Log(nameof(DropFood) + " 2");
-                if(CanConsume(item, consumeItems))
+                foreach(ItemDrop.ItemData item in inventory.GetAllItems())
                 {
-                    Debug.Log(nameof(DropFood) + " 3 " + item.m_shared.m_name);
-                    foodItem = item;
-                    break;
+                    Debug.Log(nameof(DropFood) + " 2");
+                    if(CanConsume(item, consumeItems))
+                    {
+                        Debug.Log(nameof(DropFood) + " 3 " + item.m_shared.m_name);
+                        foodItem = item;
+                        // break;
+                    }
                 }
             }
+            else foodItem = inventory.GetItem(0);
             Debug.Log(nameof(DropFood) + " 4 ");
             if(foodItem == null) return;
             Debug.Log(nameof(DropFood) + " 5 ");
 
-            Vector3 position = transform.position + UnityEngine.Random.insideUnitSphere * 1f;
+            Vector3 position = transform.position + Random.insideUnitSphere * 2f;
             ItemDrop.DropItem(foodItem, 1, position, Quaternion.identity);
+            inventory.RemoveOneItem(foodItem);
             Debug.Log(nameof(DropFood) + " 6 ");
         }
 
@@ -233,9 +285,5 @@ namespace LoveLamp
             }
             return result;
         }
-
     }
 }
-
-
-//CircleProjector

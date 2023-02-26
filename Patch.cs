@@ -23,17 +23,29 @@ namespace LoveLamp
             if(__instance is LoveLamp loveLamp)
             {
                 LoveLamp.all.Add(loveLamp);
+                loveLamp.ConnectChest();
+
+                maxFuel = maxFuelConfig.Value;
+                secPerFuel = secPerFuelConfig.Value;
+                loveLamp.radius = radius;
+                loveLamp.m_areaMarker.m_radius = radius;
+                loveLamp.m_maxFuel = maxFuel;
+                loveLamp.m_secPerFuel = secPerFuel;
             }
         }
 
         [HarmonyPatch(typeof(Fireplace), nameof(Fireplace.GetHoverText)), HarmonyPrefix]
         public static bool FireplaceGetHoverText(Fireplace __instance, ref string __result)
         {
-            if(__instance is LoveLamp)
+            if(__instance is LoveLamp loveLamp)
             {
+                bool haveChest = loveLamp.container != null;
                 __result += Localization.instance.Localize(__instance.m_name + " ( $piece_fire_fuel " + Mathf.Ceil(__instance.m_nview.GetZDO().GetFloat("fuel")).ToString() + "/" + ((int)__instance.m_maxFuel).ToString() + ")" + "\n[<color=yellow><b>1-8</b></color>] $piece_useitem " + __instance.m_fuelItem.m_itemData.m_shared.m_name); ;
                 __result += Localization.instance.Localize("\n[<color=yellow><b>$KEY_Use</b></color>] To show/hide area");
                 __result += Localization.instance.Localize("\n[<color=yellow><b>$KEY_AltPlace + $KEY_Use</b></color>] To link a chest");
+                __result += "\n";
+                if(haveChest) __result += "\nHave connected chest";
+                else __result += "\n<color=red>Don't have connected chest</color>";
                 return false;
             }
             return true;
@@ -70,13 +82,26 @@ namespace LoveLamp
         [HarmonyPatch(typeof(Character), nameof(Character.FixedUpdate)), HarmonyPostfix]
         public static void CharacterFixedUpdate(Character __instance)
         {
-            if(!__instance.IsDead()) LoveLamp.CheckBoost(__instance);
+            if(!__instance.IsDead() && __instance.IsTamed()) LoveLamp.CheckBoost(__instance);
         }
 
         [HarmonyPatch(typeof(Character), nameof(Character.GetHoverName)), HarmonyPostfix]
         public static void CharacterGetHoverName(Character __instance, ref string __result)
         {
             if(__instance.m_nview.GetZDO().GetBool("Boosted", false)) __result += $" <color=yellow>{namePostfix}</color>";
+        }
+
+        [HarmonyPatch(typeof(Character), nameof(Character.Awake)), HarmonyPostfix]
+        public static void CharacterAwake(Character __instance)
+        {
+            if(__instance.m_tameableMonsterAI == null) __instance.m_tameableMonsterAI = __instance.GetComponent<MonsterAI>();
+            if(__instance.m_tameable == null) __instance.m_tameable = __instance.GetComponent<Tameable>();
+        }
+
+        [HarmonyPatch(typeof(Character), nameof(Character.OnDestroy)), HarmonyPostfix]
+        public static void CharacterOnDeath(Character __instance)
+        {
+            LoveLamp.UnBoost(__instance);
         }
     }
 }
