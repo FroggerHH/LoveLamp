@@ -142,10 +142,8 @@ namespace LoveLamp
             if(loveLamp)
             {
                 loveLamp.Boost(character);
-                if(character.m_tameable.IsHungry())
-                {
+                if(character.m_tameable && character.m_tameable.IsHungry())
                     loveLamp.DropFood(character.m_tameableMonsterAI.m_consumeItems);
-                }
             }
             else UnBoost(character);
         }
@@ -153,21 +151,28 @@ namespace LoveLamp
         private void DropFood(List<ItemDrop> consumeItems)
         {
             if(!container) return;
+            Debug.Log(nameof(DropFood));
 
+            Debug.Log(nameof(DropFood) + " 1");
             ItemDrop.ItemData foodItem = null;
             Inventory inventory = container.GetInventory();
             foreach(ItemDrop.ItemData item in inventory.GetAllItems())
             {
+                Debug.Log(nameof(DropFood) + " 2");
                 if(CanConsume(item, consumeItems))
                 {
+                    Debug.Log(nameof(DropFood) + " 3 " + item.m_shared.m_name);
                     foodItem = item;
                     break;
                 }
             }
+            Debug.Log(nameof(DropFood) + " 4 ");
             if(foodItem == null) return;
+            Debug.Log(nameof(DropFood) + " 5 ");
 
             Vector3 position = transform.position + UnityEngine.Random.insideUnitSphere * 1f;
             ItemDrop.DropItem(foodItem, 1, position, Quaternion.identity);
+            Debug.Log(nameof(DropFood) + " 6 ");
         }
 
         private bool CanConsume(ItemDrop.ItemData item, List<ItemDrop> consumeItems)
