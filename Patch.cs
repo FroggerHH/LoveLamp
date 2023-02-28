@@ -82,7 +82,7 @@ namespace LoveLamp
         [HarmonyPatch(typeof(Character), nameof(Character.FixedUpdate)), HarmonyPostfix]
         public static void CharacterFixedUpdate(Character __instance)
         {
-            if(!__instance.IsDead() && __instance.IsTamed()) LoveLamp.CheckBoost(__instance);
+            if(!__instance.IsDead() && __instance.IsTamed() && !Game.IsPaused()) LoveLamp.CheckBoost(__instance);
         }
 
         [HarmonyPatch(typeof(Character), nameof(Character.GetHoverName)), HarmonyPostfix]
@@ -98,10 +98,10 @@ namespace LoveLamp
             if(__instance.m_tameable == null) __instance.m_tameable = __instance.GetComponent<Tameable>();
         }
 
-        [HarmonyPatch(typeof(Character), nameof(Character.OnDestroy)), HarmonyPostfix]
-        public static void CharacterOnDeath(Character __instance)
+        [HarmonyPatch(typeof(Character), nameof(Character.Start)), HarmonyPostfix]
+        public static void CharacterStart(Character __instance)
         {
-            LoveLamp.UnBoost(__instance);
+            if(__instance.IsPlayer() == false) _self.Debug($"Boosted for {__instance.GetHoverName()} is {__instance.m_nview.GetZDO().GetBool("Boosted")}");
         }
     }
 }

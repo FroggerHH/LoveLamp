@@ -99,7 +99,7 @@ namespace LoveLamp
                     character.m_health *= health;
                     character.m_speed *= speed;
                     character.m_jumpForce *= jumpForce;
-                    character.m_level += boostLevel;
+                    character.SetLevel(character.GetLevel() + boostLevel);
                 }
 
 
@@ -117,6 +117,7 @@ namespace LoveLamp
             if(zDO == null) return;
             bool boosted = zDO.GetBool("Boosted", false);
             if(!boosted) return;
+            if(character.GetLevel() <= 1) return;
 
             if(character.gameObject.TryGetComponent(out Procreation procreation))
             {
