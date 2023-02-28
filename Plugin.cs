@@ -95,7 +95,7 @@ namespace LoveLamp
             Config.SaveOnConfigSet = false;
 
             radiusConfig = config("General", "Lamp Radius", 10f, new ConfigDescription("", new AcceptableValueRange<float>(5f, 25)));
-            chestRadiusConfig = config("General", "Find Chest Radius", 2f, new ConfigDescription("", new AcceptableValueRange<float>(5f, 25)));
+            chestRadiusConfig = config("General", "Find Chest Radius", 2f, new ConfigDescription("", new AcceptableValueRange<float>(1.5f, 25)));
             boostLevelConfig = config("Boosts", "Add Level", 1, new ConfigDescription("", new AcceptableValueRange<int>(1, 5)));
             updateIntervalConfig = config("Boosts", "Update Interval", 2f, new ConfigDescription("", new AcceptableValueRange<float>(1.01f, 5f)));
             maxCreaturesConfig = config("Boosts", "Max Creatures", 2, new ConfigDescription("", new AcceptableValueRange<int>(1, 20)));
