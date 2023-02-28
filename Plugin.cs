@@ -94,22 +94,21 @@ namespace LoveLamp
             #region config
             Config.SaveOnConfigSet = false;
 
-            radiusConfig = config("General", "Lamp Radius", 10f, "");
-            chestRadiusConfig = config("General", "Find Chest Radius", 2f, "");
-            boostLevelConfig = config("Boosts", "Level", 1, "");
-            updateIntervalConfig = config("Boosts", "Update Interval", 2f, "");
-            maxCreaturesConfig = config("Boosts", "Max Creatures", 2, "");
-            requiredLovePointsConfig = config("Boosts", "Required Love Points", 2, "");
-            pregnancyDurationConfig = config("Boosts", "Pregnancy Duration", 2f, "");
-            tamingTimeConfig = config("Boosts", "Taming Time", 2f, "");
-            levelUpFactorConfig = config("Boosts", "Level Up Factor", 2f, "");
-            healthConfig = config("Boosts", "Health", 2f, "");
-            speedConfig = config("Boosts", "Speed", 2f, "");
-            jumpForceConfig = config("Boosts", "Jump Force", 2f, "");
+            radiusConfig = config("General", "Lamp Radius", 10f, new ConfigDescription("", new AcceptableValueRange<float>(5f, 25)));
+            chestRadiusConfig = config("General", "Find Chest Radius", 2f, new ConfigDescription("", new AcceptableValueRange<float>(5f, 25)));
+            boostLevelConfig = config("Boosts", "Add Level", 1, new ConfigDescription("", new AcceptableValueRange<int>(1, 5)));
+            updateIntervalConfig = config("Boosts", "Update Interval", 2f, new ConfigDescription("", new AcceptableValueRange<float>(1.01f, 5f)));
+            maxCreaturesConfig = config("Boosts", "Max Creatures", 2, new ConfigDescription("", new AcceptableValueRange<int>(1, 20)));
+            requiredLovePointsConfig = config("Boosts", "Required Love Points", 2, new ConfigDescription("", new AcceptableValueRange<int>(1, 5)));
+            pregnancyDurationConfig = config("Boosts", "Pregnancy Duration", 2f, new ConfigDescription("", new AcceptableValueRange<float>(1.01f, 5f)));
+            tamingTimeConfig = config("Boosts", "Taming Time", 2f, new ConfigDescription("", new AcceptableValueRange<float>(1.01f, 5f)));
+            levelUpFactorConfig = config("Boosts", "Level Up Factor", 2f, new ConfigDescription("", new AcceptableValueRange<float>(1.01f, 5f)));
+            healthConfig = config("Boosts", "Health", 2f, new ConfigDescription("", new AcceptableValueRange<float>(1.01f, 5f)));
+            speedConfig = config("Boosts", "Speed", 2f, new ConfigDescription("", new AcceptableValueRange<float>(1.01f, 5f)));
+            jumpForceConfig = config("Boosts", "Jump Force", 2f, new ConfigDescription("", new AcceptableValueRange<float>(1.01f, 5f)));
             namePostfixConfig = config("Boosts", "Name Postfix", "Boosted", "");
-            boostLevelConfig = config("Boosts", "Add Level", 1, "");
-            secPerFuelConfig = config("Boosts", "Sec Per Fuel", 400, "");
-            maxFuelConfig = config("Boosts", "Max Fuel", 50, "");
+            secPerFuelConfig = config("Boosts", "Sec Per Fuel", 400, new ConfigDescription("", new AcceptableValueRange<int>(120, 40000)));
+            maxFuelConfig = config("Boosts", "Max Fuel", 50, new ConfigDescription("", new AcceptableValueRange<int>(25, 100)));
 
 
 
