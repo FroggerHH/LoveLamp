@@ -17,12 +17,14 @@ namespace LoveLamp
             }
             else return true;
         }
-        [HarmonyPatch(typeof(WearNTear), nameof(WearNTear.OnPlaced)), HarmonyPrefix]
+
+        [HarmonyPatch(typeof(WearNTear), nameof(WearNTear.OnPlaced)), HarmonyPostfix]
         public static void WearNTearOnPlaced(WearNTear __instance)
         {
             InitLamp(__instance);
         }        
-        [HarmonyPatch(typeof(WearNTear), nameof(WearNTear.Awake)), HarmonyPrefix]
+
+        [HarmonyPatch(typeof(WearNTear), nameof(WearNTear.Awake)), HarmonyPostfix]
         public static void WearNTearAwake(WearNTear __instance)
         {
             if(__instance.m_nview.m_ghost == false) InitLamp(__instance);
@@ -30,9 +32,10 @@ namespace LoveLamp
 
         private static void InitLamp(WearNTear __instance)
         {
-            if(__instance.m_piece.m_name == "$piece_JF_LoveLamp")
+            if(__instance.m_piece && __instance.m_piece.m_name == "$piece_JF_LoveLamp")
             {
                 LoveLamp loveLamp = __instance.GetComponent<LoveLamp>();
+                if(!loveLamp) return;
                 loveLamp.ConnectChest();
 
                 maxFuel = maxFuelConfig.Value;
