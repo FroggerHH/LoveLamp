@@ -11,6 +11,7 @@ namespace LoveLamp
         [SerializeField] internal CircleProjector m_areaMarker;
         internal static List<LoveLamp> all = new();
         internal Container container;
+        internal bool noFood = false;
 
         internal bool OnInteract(Humanoid user, bool hold, bool shift)
         {
@@ -29,11 +30,12 @@ namespace LoveLamp
             Container container = GetNearestChest();
             if(!container)
             {
-                Player.m_localPlayer.Message(MessageHud.MessageType.Center, "Can't find any chest near the lamp");
+                Chat.instance.SetNpcText(gameObject, Vector3.up * 1.5f, 20f, 2.5f, "", "Can't find any chest near the lamp", false);
                 return;
             }
             this.container = container;
             StartCoroutine(HeightlightChest(container.gameObject));
+            Chat.instance.SetNpcText(gameObject, Vector3.up * 1.5f, 20f, 2.5f, "", "Chest connected", false);
         }
 
         private IEnumerator HeightlightChest(GameObject container)
@@ -67,8 +69,6 @@ namespace LoveLamp
             if(m_areaMarker.gameObject.activeSelf) m_areaMarker.gameObject.SetActive(false);
             else m_areaMarker.gameObject.SetActive(true);
         }
-
-
 
 
         private void Boost(Character character)
@@ -169,73 +169,31 @@ namespace LoveLamp
         private void GiveFood(Character character)
         {
             if(!container) return;
-            Debug.Log("GiveFood");
 
             ItemDrop.ItemData foodItem = null;
             Inventory inventory = container.GetInventory();
             foreach(ItemDrop.ItemData item in inventory.GetAllItems())
             {
-                Debug.Log("GiveFood 2");
                 if(character.m_tameableMonsterAI.CanConsume(item))
                 {
-                    Debug.Log($"GiveFood 3 {item.m_shared.m_name}");
                     foodItem = item;
                     break;
                 }
             }
 
-            Debug.Log("GiveFood 4 ");
-            if(foodItem == null) return;
-            Debug.Log("GiveFood 5");
+            if(foodItem == null)
+            {
+                noFood = true;
+                return;
+            }
+            noFood = false;
+
 
             character.m_tameableMonsterAI.m_onConsumedItem?.Invoke(character.m_tameableMonsterAI.m_consumeTarget);
             (character as Humanoid)?.m_consumeItemEffects.Create(transform.position, Quaternion.identity);
             character.m_tameableMonsterAI.m_animator.SetTrigger("consume");
             character.m_tameableMonsterAI.m_consumeTarget = null;
             inventory.RemoveOneItem(foodItem);
-            Debug.Log("GiveFood 6");
-        }
-
-        private void DropFood(List<ItemDrop> consumeItems = null)
-        {
-            if(!container) return;
-            Debug.Log(nameof(DropFood));
-
-            Debug.Log(nameof(DropFood) + " 1");
-            ItemDrop.ItemData foodItem = null;
-            Inventory inventory = container.GetInventory();
-            if(consumeItems != null)
-            {
-                foreach(ItemDrop.ItemData item in inventory.GetAllItems())
-                {
-                    Debug.Log(nameof(DropFood) + " 2");
-                    if(CanConsume(item, consumeItems))
-                    {
-                        Debug.Log(nameof(DropFood) + " 3 " + item.m_shared.m_name);
-                        foodItem = item;
-                        // break;
-                    }
-                }
-            }
-            else foodItem = inventory.GetItem(0);
-            Debug.Log(nameof(DropFood) + " 4 ");
-            if(foodItem == null) return;
-            Debug.Log(nameof(DropFood) + " 5 ");
-
-            Vector3 position = transform.position + Random.insideUnitSphere * 2f;
-            ItemDrop.DropItem(foodItem, 1, position, Quaternion.identity);
-            inventory.RemoveOneItem(foodItem);
-            Debug.Log(nameof(DropFood) + " 6 ");
-        }
-
-        private bool CanConsume(ItemDrop.ItemData item, List<ItemDrop> consumeItems)
-        {
-            foreach(ItemDrop consumeItem in consumeItems)
-            {
-                if(consumeItem.m_itemData.m_shared.m_name == item.m_shared.m_name)
-                    return true;
-            }
-            return false;
         }
 
         internal static void UnBoostAll()

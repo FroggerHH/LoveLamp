@@ -17,12 +17,22 @@ namespace LoveLamp
             }
             else return true;
         }
-        [HarmonyPatch(typeof(Fireplace), nameof(Fireplace.Awake)), HarmonyPrefix]
-        public static void FireplaceAwake(Fireplace __instance)
+        [HarmonyPatch(typeof(WearNTear), nameof(WearNTear.OnPlaced)), HarmonyPrefix]
+        public static void WearNTearOnPlaced(WearNTear __instance)
         {
-            if(__instance is LoveLamp loveLamp)
+            InitLamp(__instance);
+        }        
+        [HarmonyPatch(typeof(WearNTear), nameof(WearNTear.Awake)), HarmonyPrefix]
+        public static void WearNTearAwake(WearNTear __instance)
+        {
+            if(__instance.m_nview.m_ghost == false) InitLamp(__instance);
+        }
+
+        private static void InitLamp(WearNTear __instance)
+        {
+            if(__instance.m_piece.m_name == "$piece_JF_LoveLamp")
             {
-                LoveLamp.all.Add(loveLamp);
+                LoveLamp loveLamp = __instance.GetComponent<LoveLamp>();
                 loveLamp.ConnectChest();
 
                 maxFuel = maxFuelConfig.Value;
@@ -44,8 +54,13 @@ namespace LoveLamp
                 __result += Localization.instance.Localize("\n[<color=yellow><b>$KEY_Use</b></color>] To show/hide area");
                 __result += Localization.instance.Localize("\n[<color=yellow><b>$KEY_AltPlace + $KEY_Use</b></color>] To link a chest");
                 __result += "\n";
-                if(haveChest) __result += "\nHave connected chest";
-                else __result += "\n<color=red>Don't have connected chest</color>";
+                if(haveChest)
+                {
+                    __result += "\nHave connected chest";
+                   // if(loveLamp.noFood) __result += "\n<color=red>Not enough food</color>";
+                   // if(!loveLamp.noFood) __result += "\nThere's enough food";s
+                }
+                if(!haveChest) __result += "\n<color=red>There's not enough food</color>";
                 return false;
             }
             return true;

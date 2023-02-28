@@ -133,7 +133,7 @@ namespace LoveLamp
             piece.Category.Add(BuildPieceCategory.Furniture);
             MaterialReplacer.RegisterGameObjectForShaderSwap(piece.Prefab, MaterialReplacer.ShaderType.UseUnityShader);
             #endregion
-            //PrefabManager.RegisterPrefab("lovelamp","vfx_addFuel");
+            PiecePrefabManager.RegisterPrefab("lovelamp","vfx_addFuel");
             harmony.PatchAll();
         }
 
