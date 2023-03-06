@@ -22,7 +22,7 @@ namespace LoveLamp
         public static void WearNTearOnPlaced(WearNTear __instance)
         {
             InitLamp(__instance);
-        }        
+        }
 
         [HarmonyPatch(typeof(WearNTear), nameof(WearNTear.Awake)), HarmonyPostfix]
         public static void WearNTearAwake(WearNTear __instance)
@@ -35,6 +35,7 @@ namespace LoveLamp
             if(__instance.m_piece && __instance.m_piece.m_name == "$piece_JF_LoveLamp")
             {
                 LoveLamp loveLamp = __instance.GetComponent<LoveLamp>();
+                if(!LoveLamp.all.Contains(loveLamp)) LoveLamp.all.Add(loveLamp);
                 if(!loveLamp) return;
                 loveLamp.ConnectChest();
 
@@ -53,17 +54,19 @@ namespace LoveLamp
             if(__instance is LoveLamp loveLamp)
             {
                 bool haveChest = loveLamp.container != null;
-                __result += Localization.instance.Localize(__instance.m_name + " ( $piece_fire_fuel " + Mathf.Ceil(__instance.m_nview.GetZDO().GetFloat("fuel")).ToString() + "/" + ((int)__instance.m_maxFuel).ToString() + ")" + "\n[<color=yellow><b>1-8</b></color>] $piece_useitem " + __instance.m_fuelItem.m_itemData.m_shared.m_name); ;
-                __result += Localization.instance.Localize("\n[<color=yellow><b>$KEY_Use</b></color>] To show/hide area");
-                __result += Localization.instance.Localize("\n[<color=yellow><b>$KEY_AltPlace + $KEY_Use</b></color>] To link a chest");
+                __result += Localization.instance.Localize(__instance.m_name + " ( $piece_fire_fuel " + 
+                    Mathf.Ceil(__instance.m_nview.GetZDO().GetFloat("fuel")).ToString() + "/" + ((int)__instance.m_maxFuel).ToString() + ")" 
+                    + "\n[<color=yellow><b>1-8</b></color>] $piece_useitem " + __instance.m_fuelItem.m_itemData.m_shared.m_name); ;
+                __result += Localization.instance.Localize("\n[<color=yellow><b>$KEY_Use</b></color>] $LoveLamp_ShowHideArea");
+                __result += Localization.instance.Localize("\n[<color=yellow><b>$KEY_AltPlace + $KEY_Use</b></color>] $LoveLamp_LinkChest");
                 __result += "\n";
                 if(haveChest)
                 {
-                    __result += "\nHave connected chest";
-                   // if(loveLamp.noFood) __result += "\n<color=red>Not enough food</color>";
-                   // if(!loveLamp.noFood) __result += "\nThere's enough food";s
+                    __result += Localization.instance.Localize("\n$LoveLamp_HaveChest");
+                    // if(loveLamp.noFood) __result += "\n<color=red>Not enough food</color>";
+                    // if(!loveLamp.noFood) __result += "\nThere's enough food";s
                 }
-                if(!haveChest) __result += "\n<color=red>There's not enough food</color>";
+                if(!haveChest) __result += Localization.instance.Localize("\n<color=red>$LoveLamp_NoHaveChest</color>");
                 return false;
             }
             return true;
@@ -72,19 +75,20 @@ namespace LoveLamp
         [HarmonyPatch(typeof(Tameable), nameof(Tameable.GetHoverText)), HarmonyPostfix]
         public static void TameableGetHoverText(Tameable __instance, ref string __result)
         {
+            if(Game.instance.IsShuttingDown()) return;
             if(__instance.m_character.m_nview.GetZDO().GetBool("Boosted", false))
             {
-                __result += Localization.instance.Localize("\n");
-                __result += Localization.instance.Localize("\nBoosts:");
-                __result += Localization.instance.Localize($"\nMax Creatures <color=orange>X{maxCreatures}</color>");
-                __result += Localization.instance.Localize($"\nRequired Love Points <color=orange>-X{requiredLovePoints}</color>");
-                __result += Localization.instance.Localize($"\nPregnancy Chance <color=orange>100%</color>");
-                __result += Localization.instance.Localize($"\nTaming Time <color=orange>-X{tamingTime}</color>");
-                __result += Localization.instance.Localize($"\nLevelUp Factor <color=orange>X{levelUpFactor}</color>");
-                __result += Localization.instance.Localize($"\nHealth <color=orange>X{health}</color>");
-                __result += Localization.instance.Localize($"\nSpeed <color=orange>X{speed}</color>");
-                __result += Localization.instance.Localize($"\nJumpForce <color=orange>X{jumpForce}</color>");
-                __result += Localization.instance.Localize($"\nlevel <color=orange>+{boostLevel}</color>");
+                __result += "\n";
+                __result += Localization.instance.Localize("\n$LoveLamp_Boosts:");
+                __result += Localization.instance.Localize($"\n$LoveLamp_MaxCreatures <color=orange>X{maxCreatures}</color>");
+                __result += Localization.instance.Localize($"\n$LoveLamp_RequiredLovePoints <color=orange>-X{requiredLovePoints}</color>");
+                __result += Localization.instance.Localize($"\n$LoveLamp_PregnancyChance <color=orange>100%</color>");
+                __result += Localization.instance.Localize($"\n$LoveLamp_TamingTime <color=orange>-X{tamingTime}</color>");
+                __result += Localization.instance.Localize($"\n$LoveLamp_LevelUpFactor <color=orange>X{levelUpFactor}</color>");
+                __result += Localization.instance.Localize($"\n$LoveLamp_Health <color=orange>X{health}</color>");
+                __result += Localization.instance.Localize($"\n$LoveLamp_Speed <color=orange>X{speed}</color>");
+                __result += Localization.instance.Localize($"\n$LoveLamp_JumpForce <color=orange>X{jumpForce}</color>");
+                __result += Localization.instance.Localize($"\n$LoveLamp_Level <color=orange>+{boostLevel}</color>");
             }
         }
 

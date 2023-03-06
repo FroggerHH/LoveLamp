@@ -14,7 +14,7 @@ namespace LoveLamp
     public class Plugin : BaseUnityPlugin
     {
         #region values
-        private const string ModName = "LoveLamp", ModVersion = "1.0.1", ModGUID = "com.Frogger." + ModName;
+        private const string ModName = "LoveLamp", ModVersion = "1.0.2", ModGUID = "com.Frogger." + ModName;
         private static readonly Harmony harmony = new(ModGUID);
         public static Plugin _self;
         internal BuildPiece piece;
@@ -134,6 +134,7 @@ namespace LoveLamp
             MaterialReplacer.RegisterGameObjectForShaderSwap(piece.Prefab, MaterialReplacer.ShaderType.UseUnityShader);
             #endregion
             PiecePrefabManager.RegisterPrefab("lovelamp","vfx_addFuel");
+            LocalizationManager.Localizer.Load();
             harmony.PatchAll();
         }
 
